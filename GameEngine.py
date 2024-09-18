@@ -15,7 +15,6 @@ class GameEngine(arcade.Window):
         self.gravity = -0.5
         self.jump_strength = 10
         self.player_velocity_y = 0
-        self.is_jumping = False
         self.is_on_ground = False
 
         self.up_pressed = False
@@ -24,7 +23,7 @@ class GameEngine(arcade.Window):
         self.right_pressed = False
 
         self.platforms = [
-            arcade.SpriteSolidColor(200, 20, arcade.color.RED)
+            arcade.SpriteSolidColor(200, 20, arcade.color.GREEN)
             for _ in range(2)
         ]
         self.platforms[0].center_x = 400
@@ -32,17 +31,11 @@ class GameEngine(arcade.Window):
         self.platforms[1].center_x = 300
         self.platforms[1].center_y = 250
 
-        self.platform_direction = 1
-
         self.ground = arcade.SpriteSolidColor(SCREEN_WIDTH, 20, arcade.color.BLACK)
         self.ground.center_x = SCREEN_WIDTH // 2
         self.ground.center_y = 30
 
-        self.camera = None
-
-    def setup(self):
-         self.camera = arcade.Camera(self.width, self.height)
-
+        self.camera = arcade.Camera(self.width, self.height)
 
     def on_draw(self):
         arcade.start_render()
@@ -55,7 +48,6 @@ class GameEngine(arcade.Window):
     def on_update(self, delta_time):
         if self.up_pressed and self.is_on_ground:
             self.player_velocity_y = self.jump_strength
-            self.is_jumping = True
             self.is_on_ground = False
         
         self.player_velocity_y += self.gravity
@@ -63,12 +55,10 @@ class GameEngine(arcade.Window):
 
         if self.player_y <= 30:
             self.player_y = 30
-            self.is_on_ground = True
             self.player_velocity_y = 0
-            self.is_jumping = False
+            self.is_on_ground = True
 
         self.check_platform_collisions()
-        self.move_platforms(delta_time)
 
         if self.up_pressed:
             self.player_y += self.player_speed
@@ -81,21 +71,6 @@ class GameEngine(arcade.Window):
 
         self.center_camera_to_player()
 
-    def center_camera_to_player(self):
-        screen_center_x = self.player_x - (self.camera.viewport_width / 2)
-        screen_center_y = self.player_y - (
-            self.camera.viewport_height / 2
-        )
-
-        # Don't let camera travel past 0
-        if screen_center_x < 0:
-            screen_center_x = 0
-        if screen_center_y < 0:
-            screen_center_y = 0
-        player_centered = screen_center_x, screen_center_y
-
-        self.camera.move_to(player_centered)
-
     def check_platform_collisions(self):
         self.is_on_ground = False
         for platform in self.platforms:
@@ -106,20 +81,17 @@ class GameEngine(arcade.Window):
                 self.is_on_ground = True
                 self.player_y = platform.center_y + 30
                 self.player_velocity_y = 0
-                self.is_jumping = False
 
-        if self.player_y <= 30:
-            self.player_y = 30
-            self.is_on_ground = True
-            self.player_velocity_y = 0
-            self.is_jumping = False
+    def center_camera_to_player(self):
+        screen_center_x = self.player_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player_y - (self.camera.viewport_height / 2)
 
+        if screen_center_x < 0:
+            screen_center_x = 0
+        if screen_center_y < 0:
+            screen_center_y = 0
 
-    def move_platforms(self, delta_time):
-        for platform in self.platforms:
-            platform.center_x += self.platform_direction * 100 * delta_time
-            if platform.center_x > SCREEN_WIDTH - platform.width // 2 or platform.center_x < platform.width // 2:
-                self.platform_direction *= -1
+        self.camera.move_to((screen_center_x, screen_center_y))
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
@@ -143,7 +115,6 @@ class GameEngine(arcade.Window):
 
 def main():
     window = GameEngine(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    window.setup()
     arcade.run()
 
 if __name__ == "__main__":
