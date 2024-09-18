@@ -78,11 +78,11 @@ class GameEngine(arcade.Window):
     # Met à jour les objets du jeu
     def on_update(self, delta_time):
         self.update_mana_bar()
+        self.center_camera_to_player()
         if self.rewinding:
             rewind_time_elapsed = time.time() - self.rewind_start_time
             rewind_frame_count = int(rewind_time_elapsed * 60)
             self.mana -= self.mana_rate
-            self.center_camera_to_player()
             if self.mana <= 0:
                 self.stop_rewind()
             elif rewind_frame_count < len(self.pos_hist):
