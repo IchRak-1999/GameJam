@@ -2,7 +2,7 @@ import arcade
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-SCREEN_TITLE = "fenetre de jeu"
+SCREEN_TITLE = "ChronoBlade"
 
 class GameEngine(arcade.Window):
     def __init__(self, width, height, title):
