@@ -10,4 +10,4 @@ class SolidObject:
         self.sprite.draw()
 
     def update(self, delta_time):
-        pass 
+        pass

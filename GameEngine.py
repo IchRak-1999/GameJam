@@ -5,7 +5,7 @@ from SolidObject import SolidObject
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-SCREEN_TITLE = "Game with Platforms"
+SCREEN_TITLE = "???"
 
 class GameEngine(arcade.Window):
     def __init__(self, width, height, title):
@@ -48,9 +48,9 @@ class GameEngine(arcade.Window):
         self.right_pressed = False
 
         self.platforms = [
-            Platform(200, 20, arcade.color.RED, 400, 50),
-            Platform(200, 20, arcade.color.RED, 300, 250),
-            Platform(200, 20, arcade.color.RED, 400, 200)
+            Platform(200, 20, arcade.color.RED, 400, 50, -1, 0),
+            Platform(200, 20, arcade.color.RED, 300, 250, 2, 0),
+            Platform(200, 20, arcade.color.RED, 400, 200, 0, 1)
         ]
 
         self.ground = SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
