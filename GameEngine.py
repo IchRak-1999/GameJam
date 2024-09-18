@@ -2,6 +2,7 @@ import arcade
 import time
 from Platform import Platform
 from SolidObject import SolidObject
+from Player import Player
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -12,11 +13,7 @@ class GameEngine(arcade.Window):
         super().__init__(width, height, title)
         arcade.set_background_color(arcade.color.WHITE)
         self.scene = None
-        self.player_sprite = None
-        self.sword_sprite = None 
-        self.physics_engine = None
         self.camera = None
-        self.background = None
         self.time_slowed = False
         self.mana = None
 
@@ -27,15 +24,7 @@ class GameEngine(arcade.Window):
 
     # Initialise les éléments du jeu
     def setup(self):
-        self.player_x = 400
-        self.player_y = 300
-        self.player_speed = 5
-        self.gravity = -0.5
-        self.jump_strength = 10
-        self.player_velocity_y = 0
-        self.is_jumping = False
-        self.is_on_ground = False
-
+        self.player = Player(400, 300, 5, 10, -0.5)
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
         self.mana_bar.center_x = SCREEN_WIDTH - 50
@@ -73,7 +62,7 @@ class GameEngine(arcade.Window):
     def update_mana_bar(self):
         camera_x, camera_y = self.camera.position
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
-        self.mana_bar.center_x = camera_x + SCREEN_WIDTH - 50 
+        self.mana_bar.center_x = camera_x + SCREEN_WIDTH - 50
         self.mana_bar.center_y = camera_y + SCREEN_HEIGHT - self.mana / 2 - 10
 
     # Dessine les objets du jeu
@@ -83,7 +72,7 @@ class GameEngine(arcade.Window):
         self.mana_bar.draw()
         for platform in self.platforms:
             platform.draw()
-        arcade.draw_circle_filled(self.player_x, self.player_y, 30, arcade.color.GREEN)
+        arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 30, arcade.color.GREEN)
         self.camera.use()
 
     # Met à jour les objets du jeu
@@ -97,46 +86,21 @@ class GameEngine(arcade.Window):
             if self.mana <= 0:
                 self.stop_rewind()
             elif rewind_frame_count < len(self.pos_hist):
-                self.player_x, self.player_y = self.pos_hist[-rewind_frame_count - 1]
+                self.player.center_x, self.player.center_y = self.pos_hist[-rewind_frame_count - 1]
             else:
                 self.stop_rewind()
         else:
-            if self.up_pressed and self.is_on_ground:
-                self.player_velocity_y = self.jump_strength
-                self.is_jumping = True
-                self.is_on_ground = False
-            
-            self.player_velocity_y += self.gravity
-            self.player_y += self.player_velocity_y
-
-            if self.player_y <= 30:
-                self.player_y = 30
-                self.is_on_ground = True
-                self.player_velocity_y = 0
-                self.is_jumping = False
-
-            self.check_platform_collisions()
+            self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed, self.platforms, delta_time)
             self.move_platforms(delta_time)
 
-            if self.up_pressed:
-                self.player_y += self.player_speed
-            if self.down_pressed:
-                self.player_y -= self.player_speed
-            if self.left_pressed:
-                self.player_x -= self.player_speed
-            if self.right_pressed:
-                self.player_x += self.player_speed
-
-            self.center_camera_to_player()
-
-            self.pos_hist.append((self.player_x, self.player_y))
+            self.pos_hist.append((self.player.center_x, self.player.center_y))
             if self.mana < 100:
                 self.mana += self.mana_rate
 
     # Centre la caméra sur le joueur
     def center_camera_to_player(self):
-        screen_center_x = self.player_x - (self.camera.viewport_width / 2)
-        screen_center_y = self.player_y - (self.camera.viewport_height / 2)
+        screen_center_x = self.player.center_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player.center_y - (self.camera.viewport_height / 2)
 
         if screen_center_x < 0:
             screen_center_x = 0
@@ -146,25 +110,6 @@ class GameEngine(arcade.Window):
 
         self.camera.move_to(player_centered)
 
-    # Vérifie les collisions avec les plateformes
-    def check_platform_collisions(self):
-        self.is_on_ground = False
-        for platform in self.platforms:
-            if (self.player_y - 30 <= platform.sprite.center_y + self.jump_strength and
-                self.player_y - 30 >= platform.sprite.center_y - self.jump_strength and
-                self.player_x >= platform.sprite.center_x - 100 and
-                self.player_x <= platform.sprite.center_x + 100):
-                self.is_on_ground = True
-                self.player_y = platform.sprite.center_y + 30
-                self.player_velocity_y = 0
-                self.is_jumping = False
-
-        if self.player_y <= 30:
-            self.player_y = 30
-            self.is_on_ground = True
-            self.player_velocity_y = 0
-            self.is_jumping = False
-
     # Déplace les plateformes
     def move_platforms(self, delta_time):
         for platform in self.platforms:
@@ -172,7 +117,7 @@ class GameEngine(arcade.Window):
 
     # Action en fonction de la touche appuyée
     def on_key_press(self, key, modifiers):
-        if not self.rewinding :
+        if not self.rewinding:
             if key == arcade.key.UP:
                 self.up_pressed = True
             elif key == arcade.key.DOWN:
@@ -186,7 +131,7 @@ class GameEngine(arcade.Window):
 
     # Relâche la touche appuyée
     def on_key_release(self, key, modifiers):
-        if not self.rewinding :
+        if not self.rewinding:
             if key == arcade.key.UP:
                 self.up_pressed = False
             elif key == arcade.key.DOWN:
@@ -202,7 +147,7 @@ class GameEngine(arcade.Window):
     def on_mouse_press(self, x, y, button, modifiers):
         pass
 
-    # Relache la touche de la souris appuyée
+    # Relâche la touche de la souris appuyée
     def on_mouse_release(self, x, y, button, modifiers):
         pass
 
