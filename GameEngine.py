@@ -23,6 +23,7 @@ class GameEngine(arcade.Window):
         self.rewind_duration = 5
         self.pos_hist = []
 
+    # initialise les éléments du jeu
     def setup(self):
         self.player_x = 400
         self.player_y = 300
@@ -39,7 +40,7 @@ class GameEngine(arcade.Window):
         self.mana_bar_bg.center_y = SCREEN_HEIGHT - 100
         """
 
-        self.mana = 100
+        self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
         self.mana_bar.center_x = SCREEN_WIDTH - 50
         self.mana_bar.center_y = SCREEN_HEIGHT - 100
@@ -50,6 +51,7 @@ class GameEngine(arcade.Window):
         self.left_pressed = False
         self.right_pressed = False
 
+        # à modifier
         self.platforms = [
             arcade.SpriteSolidColor(200, 20, arcade.color.RED)
             for _ in range(3)
@@ -60,7 +62,6 @@ class GameEngine(arcade.Window):
         self.platforms[1].center_y = 250
         self.platforms[2].center_x = 400
         self.platforms[2].center_y = 200
-
         self.platform_direction = 1
 
         self.ground = arcade.SpriteSolidColor(SCREEN_WIDTH, 20, arcade.color.BLACK)
@@ -69,23 +70,26 @@ class GameEngine(arcade.Window):
 
         self.camera = arcade.Camera(self.width, self.height)
 
+    # permet de retourner en arrière
     def rewind(self):
         if not self.rewinding:
             self.rewinding = True
             self.rewind_start_time = time.time()
             self.pos_hist = self.pos_hist[-int(self.rewind_duration * 60):]
 
+    # arrete le rewind
     def stop_rewind(self):
         self.rewinding = False
         self.pos_hist = []
 
+    # met a jour la bar de mana
     def update_mana_bar(self):
         camera_x, camera_y = self.camera.position
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
         self.mana_bar.center_x = camera_x + SCREEN_WIDTH - 50 
         self.mana_bar.center_y = camera_y + SCREEN_HEIGHT - self.mana / 2 - 10
 
-
+    # dessine les objets du jeu
     def on_draw(self):
         arcade.start_render()
         self.ground.draw()
@@ -96,6 +100,7 @@ class GameEngine(arcade.Window):
         arcade.draw_circle_filled(self.player_x, self.player_y, 30, arcade.color.GREEN)
         self.camera.use()
 
+    # met a jour les objets du jeu
     def on_update(self, delta_time):
         self.update_mana_bar()
         if self.rewinding:
@@ -142,6 +147,7 @@ class GameEngine(arcade.Window):
             if self.mana < 100:
                 self.mana += self.mana_rate
             
+    # centre la camera sur la joueur
     def center_camera_to_player(self):
         screen_center_x = self.player_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_y - (self.camera.viewport_height / 2)
@@ -154,6 +160,7 @@ class GameEngine(arcade.Window):
 
         self.camera.move_to(player_centered)
 
+    # verifie les collisions avec le decor(à modifier)
     def check_platform_collisions(self):
         self.is_on_ground = False
         for platform in self.platforms:
@@ -172,12 +179,14 @@ class GameEngine(arcade.Window):
             self.player_velocity_y = 0
             self.is_jumping = False
 
+    # deplace les plateformes(à modifier)
     def move_platforms(self, delta_time):
         for platform in self.platforms:
             platform.center_x += self.platform_direction * 100 * delta_time
             if platform.center_x > SCREEN_WIDTH - platform.width // 2 or platform.center_x < platform.width // 2:
                 self.platform_direction *= -1
 
+    # action en fonction de la touche appuyée
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
             self.up_pressed = True
@@ -188,6 +197,7 @@ class GameEngine(arcade.Window):
         elif key == arcade.key.RIGHT:
             self.right_pressed = True
 
+    # relache la touche appuyée
     def on_key_release(self, key, modifiers):
         if key == arcade.key.UP:
             self.up_pressed = False
@@ -198,10 +208,12 @@ class GameEngine(arcade.Window):
         elif key == arcade.key.RIGHT:
             self.right_pressed = False
 
+    # action en fonction de la touche de la souris appuyée
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.rewind()
 
+    # relache la touche de la souris appuyée
     def on_mouse_release(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.stop_rewind()
