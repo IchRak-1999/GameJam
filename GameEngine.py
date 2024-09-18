@@ -48,9 +48,9 @@ class GameEngine(arcade.Window):
         self.right_pressed = False
 
         self.platforms = [
-            Platform(200, 20, arcade.color.RED, 400, 50, -1, 0),
+            Platform(200, 20, arcade.color.YELLOW, 400, 50, -1, 0),
             Platform(200, 20, arcade.color.RED, 300, 250, 2, 0),
-            Platform(200, 20, arcade.color.RED, 400, 200, 0, 1)
+            Platform(200, 20, arcade.color.ORANGE, 400, 200, 0, 1)
         ]
 
         self.ground = SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
@@ -172,28 +172,30 @@ class GameEngine(arcade.Window):
 
     # Action en fonction de la touche appuyée
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.up_pressed = True
-        elif key == arcade.key.DOWN:
-            self.down_pressed = True
-        elif key == arcade.key.LEFT:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = True
-        elif key == arcade.key.R:
-            self.rewind()
+        if not self.rewinding :
+            if key == arcade.key.UP:
+                self.up_pressed = True
+            elif key == arcade.key.DOWN:
+                self.down_pressed = True
+            elif key == arcade.key.LEFT:
+                self.left_pressed = True
+            elif key == arcade.key.RIGHT:
+                self.right_pressed = True
+            elif key == arcade.key.R:
+                self.rewind()
 
     # Relâche la touche appuyée
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.up_pressed = False
-        elif key == arcade.key.DOWN:
-            self.down_pressed = False
-        elif key == arcade.key.LEFT:
-            self.left_pressed = False
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = False
-        elif key == arcade.key.R:
+        if not self.rewinding :
+            if key == arcade.key.UP:
+                self.up_pressed = False
+            elif key == arcade.key.DOWN:
+                self.down_pressed = False
+            elif key == arcade.key.LEFT:
+                self.left_pressed = False
+            elif key == arcade.key.RIGHT:
+                self.right_pressed = False
+        if key == arcade.key.R:
             self.stop_rewind()
 
     # Action en fonction de la touche de la souris appuyée
