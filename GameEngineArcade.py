@@ -47,7 +47,7 @@ class GameEngine(arcade.Window):
         self.scene.add_sprite("Sword", self.sword_sprite)
 
         for x in range(0, 1250, 64):
-            wall = arcade.Sprite(":resources:images/tiles/grassMid.png", TILE_SCALING)
+            wall = arcade.Sprite("assets/env_ground.png", TILE_SCALING)
             wall.center_x = x
             wall.center_y = 32
             self.scene.add_sprite("Walls", wall)
