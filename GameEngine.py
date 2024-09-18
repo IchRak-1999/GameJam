@@ -196,6 +196,8 @@ class GameEngine(arcade.Window):
             self.left_pressed = True
         elif key == arcade.key.RIGHT:
             self.right_pressed = True
+        elif key == arcade.key.R:
+            self.rewind()
 
     # relache la touche appuyée
     def on_key_release(self, key, modifiers):
@@ -207,16 +209,16 @@ class GameEngine(arcade.Window):
             self.left_pressed = False
         elif key == arcade.key.RIGHT:
             self.right_pressed = False
+        elif key == arcade.key.R:
+            self.stop_rewind()
 
     # action en fonction de la touche de la souris appuyée
     def on_mouse_press(self, x, y, button, modifiers):
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.rewind()
+        pass
 
     # relache la touche de la souris appuyée
     def on_mouse_release(self, x, y, button, modifiers):
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.stop_rewind()
+        pass
 
 def main():
     window = GameEngine(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
