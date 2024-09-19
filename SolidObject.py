@@ -1,4 +1,5 @@
 import arcade
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class SolidObject:
     def __init__(self, width, height, color, center_x, center_y):

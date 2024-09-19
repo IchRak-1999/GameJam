@@ -1,8 +1,5 @@
 from SolidObject import SolidObject
-import arcade
-
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class Platform(SolidObject):
     def __init__(self, width, height, color, center_x, center_y, direction_x, direction_y):

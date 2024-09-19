@@ -1,5 +1,6 @@
 import arcade
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
+import os
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FONT_NAME
 from Background import Background
 
 class MainMenu:
@@ -17,7 +18,7 @@ class MainMenu:
         self.quit_button_x = SCREEN_WIDTH // 2
         self.quit_button_y = SCREEN_HEIGHT // 2 - 100
 
-        self.button_width = 200
+        self.button_width = 270
         self.button_height = 50
 
         self.slide_out = False
@@ -28,13 +29,15 @@ class MainMenu:
     def on_draw(self):
         self.background.draw()
 
-        arcade.draw_text("Quantum Rewind", self.title_x, self.title_y, arcade.color.WHITE, font_size=50, anchor_x="center")
+        #os.path.join("Assets", "levels", "world1.json")
+
+        arcade.draw_text(SCREEN_TITLE, self.title_x, self.title_y, arcade.color.WHITE, font_size=50, anchor_x="center", font_name=FONT_NAME)
 
         arcade.draw_rectangle_filled(self.new_game_button_x, self.new_game_button_y, self.button_width, self.button_height, arcade.color.DARK_BLUE)
-        arcade.draw_text("Nouvelle Partie", self.new_game_button_x, self.new_game_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center")
+        arcade.draw_text("Nouvelle Partie", self.new_game_button_x, self.new_game_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
 
         arcade.draw_rectangle_filled(self.quit_button_x, self.quit_button_y, self.button_width, self.button_height, arcade.color.DARK_RED)
-        arcade.draw_text("Quitter", self.quit_button_x, self.quit_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center")
+        arcade.draw_text("Quitter", self.quit_button_x, self.quit_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
 
     def update(self, delta_time):
         self.background.update(delta_time)
