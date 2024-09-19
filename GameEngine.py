@@ -22,6 +22,7 @@ class GameEngine(arcade.Window):
         self.rewind_duration = 5
         self.pos_hist = []
         self.background = None
+        self.is_paused = False  # Initialisation de l'attribut is_paused
 
     def setup(self):
         self.player = Player(400, 300, 5, 10, -0.5)
@@ -42,7 +43,7 @@ class GameEngine(arcade.Window):
             Platform(200, 20, arcade.color.RED, 300, 250, 2, 0),
             Platform(200, 20, arcade.color.ORANGE, 400, 200, 0, 1)
         ]
-        
+
         self.ground = SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
         self.base_path = os.path.abspath(os.path.dirname(__file__))
         self.bg_layer_3_path = os.path.join(self.base_path, "Assets", "env", "Clouds", "Clouds 2", "3.png")
@@ -50,7 +51,8 @@ class GameEngine(arcade.Window):
         self.bg_color = arcade.color.ASH_GREY
         self.bg_width = SCREEN_WIDTH
         self.bg_height = SCREEN_HEIGHT
-        self.background = Background(self.bg_width, self.bg_height, self.bg_color, self.bg_layer_3_path, self.bg_layer_4_path)
+        self.background = Background(self.bg_width, self.bg_height, self.bg_color, self.bg_layer_3_path,
+                                     self.bg_layer_4_path)
 
         self.camera = arcade.Camera(self.width, self.height)
 
@@ -85,6 +87,11 @@ class GameEngine(arcade.Window):
                 platform.draw()
             arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 30, arcade.color.GREEN)
             self.camera.use()
+            if self.is_paused:
+                camera_x, camera_y = self.camera.position
+                pause_text = "Jeu en pause. Appuyez sur ESPACE pour continuer."
+                arcade.draw_text(pause_text, SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + camera_y, arcade.color.GRAY_ASPARAGUS,
+                                 font_size=23, anchor_x="center", anchor_y="center")
 
     def on_update(self, delta_time):
         if not self.start_game:
@@ -92,6 +99,8 @@ class GameEngine(arcade.Window):
             if self.menu.start_game:
                 self.start_game = True
         else:
+            if self.is_paused:
+                return  # Skip updating if the game is paused
             self.update_mana_bar()
             self.center_camera_to_player()
 
@@ -109,9 +118,11 @@ class GameEngine(arcade.Window):
                 else:
                     self.stop_rewind()
             else:
-                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed, self.platforms, delta_time)
+                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed,
+                                   self.platforms, delta_time)
                 for platform in self.platforms:
                     platform.update(delta_time)
+
                 self.pos_hist.append((self.player.center_x, self.player.center_y))
 
                 if self.mana < 100:
@@ -122,8 +133,10 @@ class GameEngine(arcade.Window):
     def on_key_press(self, key, modifiers):
         if not self.start_game:
             return
-
-        if not self.rewinding:
+        if key == arcade.key.SPACE:  # Pressing space toggles the menu
+            self.is_paused = not self.is_paused
+            # self.show_menu = self.is_paused  # Show the menu if paused ---> à voir
+        elif not self.rewinding:
             if key == arcade.key.UP:
                 self.up_pressed = True
             elif key == arcade.key.DOWN:
@@ -172,10 +185,12 @@ class GameEngine(arcade.Window):
 
         self.camera.move_to((screen_center_x, screen_center_y))
 
+
 def main():
     window = GameEngine(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.setup()
     arcade.run()
+
 
 if __name__ == "__main__":
     main()
