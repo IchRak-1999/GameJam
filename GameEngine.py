@@ -6,6 +6,7 @@ from SolidObject import SolidObject
 from Player import Player
 from Background import Background
 from MainMenu import MainMenu
+from Sounds import Sounds  # Importer la classe Sounds
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FONT_NAME
 
 class GameEngine(arcade.Window):
@@ -27,16 +28,16 @@ class GameEngine(arcade.Window):
         self.button_height = 50
         self.player_scale = 1.5
         self.animation_speed = 0.25
+        self.sounds = Sounds()  # Créer une instance de Sounds
 
     def setup(self):
         base_path = os.path.abspath(os.path.dirname(__file__))
         idle_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_RIGHT.png")
         run_left_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN_RIGHT.png")
-
-        idle_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_LEFT.png")
+        idle_left_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_LEFT.png")
         run_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN_LEFT.png")
 
-        self.player = Player(400, 300, 5, 10, -0.5, idle_right_sprite_path, run_left_sprite_path, idle_right_sprite_path, run_right_sprite_path, self.player_scale, self.animation_speed)
+        self.player = Player(400, 300, 5, 10, -0.5, idle_right_sprite_path, run_left_sprite_path, idle_left_sprite_path, run_right_sprite_path, self.player_scale, self.animation_speed)
 
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
@@ -71,6 +72,9 @@ class GameEngine(arcade.Window):
         self.camera = arcade.Camera(self.width, self.height)
 
         self.menu = MainMenu(self)
+
+        music_path = os.path.join(base_path, "Assets", "sounds", "main_music.mp3")
+        self.sounds.setup(music_path, volume=0.5)
 
     def rewind(self):
         if self.mana > 0:

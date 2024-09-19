@@ -12,7 +12,7 @@ class Player(arcade.Sprite):
         self.is_jumping = False
         self.is_on_ground = False
         self.animation_speed = animation_speed
-        self._scale = scale
+        self.scale = scale
         self.is_facing_right = True
 
         self.idle_right_textures = arcade.load_spritesheet(idle_right_sprite_path, sprite_width=93, sprite_height=112, columns=5, count=5)
