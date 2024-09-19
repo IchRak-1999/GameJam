@@ -4,7 +4,8 @@ import time
 from Platform import Platform
 from SolidObject import SolidObject
 from Player import Player
-
+from Menu import MainMenu
+from constants import BACKGROUND_SCROLL_SPEED_3, BACKGROUND_SCROLL_SPEED_4
 # Constants for screen width, height, and title
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -28,17 +29,20 @@ class GameEngine(arcade.Window):
         self.rewind_duration = 5
         self.pos_hist = []
 
+        self.show_menu = True  # Show menu initially
+
         # Background attributes for parallax scrolling
         self.bg_layer_3 = None
         self.bg_layer_4 = None
-        self.bg_layer_3_x_1 = 0  # Initial x position for first instance of layer 3
-        self.bg_layer_3_x_2 = SCREEN_WIDTH  # Initial x position for second instance of layer 3
-        self.bg_layer_4_x_1 = 0  # Initial x position for first instance of layer 4
-        self.bg_layer_4_x_2 = SCREEN_WIDTH  # Initial x position for second instance of layer 4
+        self.bg_layer_3_x_1 = 0
+        self.bg_layer_3_x_2 = SCREEN_WIDTH
+        self.bg_layer_4_x_1 = 0
+        self.bg_layer_4_x_2 = SCREEN_WIDTH
 
-    # Initialize game elements
+        self.main_menu = MainMenu(self)  # Initialize main menu
+
     def setup(self):
-        # Load player and mana settings
+        # Setup the game elements
         self.player = Player(400, 300, 5, 10, -0.5)
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
@@ -59,7 +63,6 @@ class GameEngine(arcade.Window):
 
         self.ground = SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
 
-        # Load background textures for parallax layers
         base_path = os.path.abspath(os.path.dirname(__file__))
         bg_layer_3_path = os.path.join(base_path, "Assets", "env", "Clouds", "Clouds 2", "3.png")
         bg_layer_4_path = os.path.join(base_path, "Assets", "env", "Clouds", "Clouds 2", "4.png")
@@ -87,60 +90,71 @@ class GameEngine(arcade.Window):
         self.mana_bar.center_y = camera_y + SCREEN_HEIGHT - self.mana / 2 - 10
 
     def on_draw(self):
-        """ Render the screen """
         arcade.start_render()
+        
+        if self.show_menu:
+            self.main_menu.on_draw()  # Draw the menu if it's active
+        else:
+            # Draw the game if the menu is not active
+            arcade.draw_lrwh_rectangle_textured(self.bg_layer_3_x_1, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_3)
+            arcade.draw_lrwh_rectangle_textured(self.bg_layer_3_x_2, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_3)
+            arcade.draw_lrwh_rectangle_textured(self.bg_layer_4_x_1, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_4)
+            arcade.draw_lrwh_rectangle_textured(self.bg_layer_4_x_2, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_4)
 
-        # Draw background layers (parallax scrolling for layers 3 and 4)
-        arcade.draw_lrwh_rectangle_textured(self.bg_layer_3_x_1, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_3)
-        arcade.draw_lrwh_rectangle_textured(self.bg_layer_3_x_2, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_3)
-        arcade.draw_lrwh_rectangle_textured(self.bg_layer_4_x_1, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_4)
-        arcade.draw_lrwh_rectangle_textured(self.bg_layer_4_x_2, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.bg_layer_4)
-
-        # Draw game objects
-        self.ground.draw()
-        self.mana_bar.draw()
-        for platform in self.platforms:
-            platform.draw()
-        arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 30, arcade.color.GREEN)
-        self.camera.use()
+            self.ground.draw()
+            self.mana_bar.draw()
+            for platform in self.platforms:
+                platform.draw()
+            arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 30, arcade.color.GREEN)
+            self.camera.use()
 
     def on_update(self, delta_time):
-        self.update_mana_bar()
-        self.center_camera_to_player()
-
-        if self.rewinding:
-            rewind_time_elapsed = time.time() - self.rewind_start_time
-            rewind_frame_count = int(rewind_time_elapsed * 60)
-            self.mana -= self.mana_rate
-            if self.mana <= 0:
-                self.stop_rewind()
-            elif rewind_frame_count < len(self.pos_hist):
-                self.player.center_x, self.player.center_y = self.pos_hist[-rewind_frame_count - 1]
-            else:
-                self.stop_rewind()
+        if self.show_menu:
+            self.main_menu.update(delta_time)
+            if self.main_menu.start_game:
+                self.show_menu = False  # Start the game after menu animation completes
         else:
-            self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed, self.platforms, delta_time)
-            self.move_platforms(delta_time)
+            # If the game is running, update game logic
+            self.update_mana_bar()
+            self.center_camera_to_player()
 
-            self.pos_hist.append((self.player.center_x, self.player.center_y))
-            if self.mana < 100:
-                self.mana += self.mana_rate
+            if self.rewinding:
+                rewind_time_elapsed = time.time() - self.rewind_start_time
+                rewind_frame_count = int(rewind_time_elapsed * 60)
+                self.mana -= self.mana_rate
+                if self.mana <= 0:
+                    self.stop_rewind()
+                elif rewind_frame_count < len(self.pos_hist):
+                    self.player.center_x, self.player.center_y = self.pos_hist[-rewind_frame_count - 1]
+                else:
+                    self.stop_rewind()
+            else:
+                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed, self.platforms, delta_time)
+                self.move_platforms(delta_time)
 
-        # Update parallax background scrolling
-        self.bg_layer_3_x_1 -= BACKGROUND_SCROLL_SPEED_3
-        self.bg_layer_3_x_2 -= BACKGROUND_SCROLL_SPEED_3
-        self.bg_layer_4_x_1 -= BACKGROUND_SCROLL_SPEED_4
-        self.bg_layer_4_x_2 -= BACKGROUND_SCROLL_SPEED_4
+                self.pos_hist.append((self.player.center_x, self.player.center_y))
+                if self.mana < 100:
+                    self.mana += self.mana_rate
 
-        if self.bg_layer_3_x_1 <= -SCREEN_WIDTH:
-            self.bg_layer_3_x_1 = SCREEN_WIDTH
-        if self.bg_layer_3_x_2 <= -SCREEN_WIDTH:
-            self.bg_layer_3_x_2 = SCREEN_WIDTH
+            # Update parallax background scrolling
+            self.bg_layer_3_x_1 -= BACKGROUND_SCROLL_SPEED_3
+            self.bg_layer_3_x_2 -= BACKGROUND_SCROLL_SPEED_3
+            self.bg_layer_4_x_1 -= BACKGROUND_SCROLL_SPEED_4
+            self.bg_layer_4_x_2 -= BACKGROUND_SCROLL_SPEED_4
 
-        if self.bg_layer_4_x_1 <= -SCREEN_WIDTH:
-            self.bg_layer_4_x_1 = SCREEN_WIDTH
-        if self.bg_layer_4_x_2 <= -SCREEN_WIDTH:
-            self.bg_layer_4_x_2 = SCREEN_WIDTH
+            if self.bg_layer_3_x_1 <= -SCREEN_WIDTH:
+                self.bg_layer_3_x_1 = SCREEN_WIDTH
+            if self.bg_layer_3_x_2 <= -SCREEN_WIDTH:
+                self.bg_layer_3_x_2 = SCREEN_WIDTH
+
+            if self.bg_layer_4_x_1 <= -SCREEN_WIDTH:
+                self.bg_layer_4_x_1 = SCREEN_WIDTH
+            if self.bg_layer_4_x_2 <= -SCREEN_WIDTH:
+                self.bg_layer_4_x_2 = SCREEN_WIDTH
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self.show_menu:
+            self.main_menu.on_mouse_press(x, y, button, modifiers)
 
     def move_platforms(self, delta_time):
         for platform in self.platforms:
