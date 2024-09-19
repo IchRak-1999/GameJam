@@ -30,10 +30,13 @@ class GameEngine(arcade.Window):
 
     def setup(self):
         base_path = os.path.abspath(os.path.dirname(__file__))
-        idle_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE.png")
-        run_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN.png")
+        idle_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_RIGHT.png")
+        run_left_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN_RIGHT.png")
 
-        self.player = Player(400, 300, 5, 10, -0.5, idle_sprite_path, run_sprite_path, self.player_scale, self.animation_speed)
+        idle_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_LEFT.png")
+        run_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN_LEFT.png")
+
+        self.player = Player(400, 300, 5, 10, -0.5, idle_right_sprite_path, run_left_sprite_path, idle_right_sprite_path, run_right_sprite_path, self.player_scale, self.animation_speed)
 
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
@@ -53,7 +56,7 @@ class GameEngine(arcade.Window):
         ]
 
         self.solid_objects = [
-            SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
+            SolidObject(SCREEN_WIDTH*20, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
         ]
 
         self.base_path = os.path.abspath(os.path.dirname(__file__))
