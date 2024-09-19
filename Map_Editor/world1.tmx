@@ -3,13 +3,13 @@
  <editorsettings>
   <export target="world1.csv" format="csv"/>
  </editorsettings>
- <tileset firstgid="1" source="tiles/QR_spritesheet1.tsx"/>
- <tileset firstgid="1025" source="tiles/QR_spritesheet2.tsx"/>
- <tileset firstgid="2049" source="tiles/QR_spritesheet3.tsx"/>
- <tileset firstgid="3493" source="tiles/QR_spritesheet4.tsx"/>
- <tileset firstgid="4517" source="tiles/QR_spritesheet5.tsx"/>
- <tileset firstgid="5541" source="tiles/QR_spritesheet6.tsx"/>
- <tileset firstgid="6565" source="tiles/QR_spritesheet7.tsx"/>
+ <tileset firstgid="1" source="spritesheets/QR_spritesheet1.tsx"/>
+ <tileset firstgid="1025" source="spritesheets/QR_spritesheet2.tsx"/>
+ <tileset firstgid="2049" source="spritesheets/QR_spritesheet3.tsx"/>
+ <tileset firstgid="3493" source="spritesheets/QR_spritesheet4.tsx"/>
+ <tileset firstgid="4517" source="spritesheets/QR_spritesheet5.tsx"/>
+ <tileset firstgid="5541" source="spritesheets/QR_spritesheet6.tsx"/>
+ <tileset firstgid="6565" source="spritesheets/QR_spritesheet7.tsx"/>
  <layer id="8" name="Platforme Background" width="30" height="20">
   <data encoding="csv">
    <chunk x="16" y="-16" width="16" height="16">

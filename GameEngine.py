@@ -24,6 +24,10 @@ class GameEngine(arcade.Window):
         self.background = None
         self.is_paused = False  # Initialisation de l'attribut is_paused
 
+        # Initialiser les dimensions des boutons du menu pause
+        self.button_width = 200  # Largeur du bouton
+        self.button_height = 50  # Hauteur du bouton
+
     def setup(self):
         self.player = Player(400, 300, 5, 10, -0.5)
 
@@ -87,11 +91,34 @@ class GameEngine(arcade.Window):
                 platform.draw()
             arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 30, arcade.color.GREEN)
             self.camera.use()
+
             if self.is_paused:
                 camera_x, camera_y = self.camera.position
-                pause_text = "Jeu en pause. Appuyez sur ESPACE pour continuer."
-                arcade.draw_text(pause_text, SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + camera_y, arcade.color.GRAY_ASPARAGUS,
+                # Ne plus tenir compte de la caméra pour l'affichage des boutons
+                pause_text = "Jeu en pause"
+                arcade.draw_text(pause_text, SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y, arcade.color.GRAY_ASPARAGUS,
                                  font_size=23, anchor_x="center", anchor_y="center")
+                reprendre_text = "Appuyez sur ESPACE pour continuer."
+                arcade.draw_text(reprendre_text, SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 50 + camera_y,
+                                 arcade.color.GRAY_ASPARAGUS,
+                                 font_size=17, anchor_x="center", anchor_y="center")
+                # Dessiner le bouton Nouvelle Partie
+                new_game_button_x = SCREEN_WIDTH / 2
+                new_game_button_y = SCREEN_HEIGHT / 2
+
+                arcade.draw_rectangle_filled(new_game_button_x + camera_x, new_game_button_y + camera_y, self.button_width,
+                                             self.button_height, arcade.color.DARK_BLUE)
+                arcade.draw_text("Menu", new_game_button_x + camera_x, new_game_button_y + camera_y, arcade.color.WHITE,
+                                 font_size=20, anchor_x="center", anchor_y="center")
+
+                # Dessiner le bouton Quitter, décalé vers le bas
+                quit_button_x = SCREEN_WIDTH / 2
+                quit_button_y = SCREEN_HEIGHT / 2 - 80
+
+                arcade.draw_rectangle_filled(quit_button_x + camera_x, quit_button_y + camera_y, self.button_width,
+                                             self.button_height, arcade.color.DARK_RED)
+                arcade.draw_text("Quitter", quit_button_x + camera_x, quit_button_y + camera_y, arcade.color.WHITE, font_size=20,
+                                 anchor_x="center", anchor_y="center")
 
     def on_update(self, delta_time):
         if not self.start_game:
@@ -173,6 +200,26 @@ class GameEngine(arcade.Window):
     def on_mouse_press(self, x, y, button, modifiers):
         if not self.start_game:
             self.menu.on_mouse_press(x, y, button, modifiers)
+        elif self.is_paused:
+            # Calcul des coordonnées des boutons
+            new_game_button_x = SCREEN_WIDTH / 2
+            new_game_button_y = SCREEN_HEIGHT / 2
+            quit_button_x = SCREEN_WIDTH / 2
+            quit_button_y = SCREEN_HEIGHT / 2 - 100
+
+            # Vérifier si le clic est dans les limites du bouton "Nouvelle Partie"
+            if (new_game_button_x - self.button_width / 2 < x < new_game_button_x + self.button_width / 2 and
+                    new_game_button_y - self.button_height / 2 < y < new_game_button_y + self.button_height / 2):
+                # Action pour "Nouvelle Partie"
+                self.start_game = False
+                self.setup()  # Réinitialiser le jeu
+                self.is_paused = False
+
+            # Vérifier si le clic est dans les limites du bouton "Quitter"
+            elif (quit_button_x - self.button_width / 2 < x < quit_button_x + self.button_width / 2 and
+                  quit_button_y - self.button_height / 2 < y < quit_button_y + self.button_height / 2):
+                # Action pour "Quitter"
+                arcade.close_window()
 
     def center_camera_to_player(self):
         screen_center_x = self.player.center_x - (self.camera.viewport_width / 2)
