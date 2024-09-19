@@ -23,12 +23,17 @@ class GameEngine(arcade.Window):
         self.pos_hist = []
         self.background = None
         self.is_paused = False
-
         self.button_width = 200
         self.button_height = 50
+        self.player_scale = 1.5
+        self.animation_speed = 0.25
 
     def setup(self):
-        self.player = Player(400, 300, 5, 10, -0.5)
+        base_path = os.path.abspath(os.path.dirname(__file__))
+        idle_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE.png")
+        run_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN.png")
+
+        self.player = Player(400, 300, 5, 10, -0.5, idle_sprite_path, run_sprite_path, self.player_scale, self.animation_speed)
 
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
@@ -47,7 +52,10 @@ class GameEngine(arcade.Window):
             Platform(200, 20, arcade.color.ORANGE, 400, 200, 0, 1)
         ]
 
-        self.ground = SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
+        self.solid_objects = [
+            SolidObject(SCREEN_WIDTH, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
+        ]
+
         self.base_path = os.path.abspath(os.path.dirname(__file__))
         self.bg_layer_3_path = os.path.join(self.base_path, "Assets", "env", "Clouds", "Clouds 2", "3.png")
         self.bg_layer_4_path = os.path.join(self.base_path, "Assets", "env", "Clouds", "Clouds 2", "4.png")
@@ -84,32 +92,36 @@ class GameEngine(arcade.Window):
             self.menu.on_draw()
         else:
             self.background.draw()
-            self.ground.draw()
             self.mana_bar.draw()
+            for solid_object in self.solid_objects:
+                solid_object.draw()
             for platform in self.platforms:
                 platform.draw()
-            arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 30, arcade.color.GREEN)
+            self.player.draw()
             self.camera.use()
 
             if self.is_paused:
                 camera_x, camera_y = self.camera.position
-                arcade.draw_text("Jeu en pause", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y, arcade.color.GRAY_ASPARAGUS,
-                                 font_size=23, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
-                arcade.draw_text("Appuyez sur ESPACE pour continuer", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 50 + camera_y,
-                                 arcade.color.GRAY_ASPARAGUS,
+                arcade.draw_text("Jeu en pause", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y,
+                                 arcade.color.GRAY_ASPARAGUS, font_size=23, anchor_x="center",
+                                 anchor_y="center", font_name=FONT_NAME)
+                arcade.draw_text("Appuyez sur ESPACE pour continuer", SCREEN_WIDTH / 2 + camera_x,
+                                 SCREEN_HEIGHT / 2 + 50 + camera_y, arcade.color.GRAY_ASPARAGUS,
                                  font_size=17, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
                 new_game_button_x = SCREEN_WIDTH / 2
                 new_game_button_y = SCREEN_HEIGHT / 2
-                arcade.draw_rectangle_filled(new_game_button_x + camera_x, new_game_button_y + camera_y, self.button_width,
-                                             self.button_height, arcade.color.DARK_BLUE)
-                arcade.draw_text("Menu", new_game_button_x + camera_x, new_game_button_y + camera_y, arcade.color.WHITE,
-                                 font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
+                arcade.draw_rectangle_filled(new_game_button_x + camera_x, new_game_button_y + camera_y,
+                                              self.button_width, self.button_height, arcade.color.DARK_BLUE)
+                arcade.draw_text("Menu", new_game_button_x + camera_x, new_game_button_y + camera_y,
+                                 arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center",
+                                 font_name=FONT_NAME)
                 quit_button_x = SCREEN_WIDTH / 2
                 quit_button_y = SCREEN_HEIGHT / 2 - 80
-                arcade.draw_rectangle_filled(quit_button_x + camera_x, quit_button_y + camera_y, self.button_width,
-                                             self.button_height, arcade.color.DARK_RED)
-                arcade.draw_text("Quitter", quit_button_x + camera_x, quit_button_y + camera_y, arcade.color.WHITE, font_size=20,
-                                 anchor_x="center", anchor_y="center", font_name=FONT_NAME)
+                arcade.draw_rectangle_filled(quit_button_x + camera_x, quit_button_y + camera_y,
+                                              self.button_width, self.button_height, arcade.color.DARK_RED)
+                arcade.draw_text("Quitter", quit_button_x + camera_x, quit_button_y + camera_y,
+                                 arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center",
+                                 font_name=FONT_NAME)
 
     def on_update(self, delta_time):
         if not self.start_game:
@@ -136,7 +148,7 @@ class GameEngine(arcade.Window):
                 else:
                     self.stop_rewind()
             else:
-                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed,
+                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed, self.solid_objects,
                                    self.platforms, delta_time)
                 for platform in self.platforms:
                     platform.update(delta_time)
@@ -153,7 +165,6 @@ class GameEngine(arcade.Window):
             return
         if key == arcade.key.SPACE:
             self.is_paused = not self.is_paused
-            # self.show_menu = self.is_paused  # Show the menu if paused ---> à voir
         elif not self.rewinding:
             if key == arcade.key.UP:
                 self.up_pressed = True
@@ -216,13 +227,10 @@ class GameEngine(arcade.Window):
 
         self.camera.move_to((screen_center_x, screen_center_y))
 
-
 def main():
     window = GameEngine(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.setup()
     arcade.run()
 
-
 if __name__ == "__main__":
     main()
-
