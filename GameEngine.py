@@ -6,7 +6,7 @@ from SolidObject import SolidObject
 from Player import Player
 from Background import Background
 from MainMenu import MainMenu
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FONT_NAME
 
 class GameEngine(arcade.Window):
     def __init__(self, width, height, title):
@@ -22,11 +22,10 @@ class GameEngine(arcade.Window):
         self.rewind_duration = 5
         self.pos_hist = []
         self.background = None
-        self.is_paused = False  # Initialisation de l'attribut is_paused
+        self.is_paused = False
 
-        # Initialiser les dimensions des boutons du menu pause
-        self.button_width = 200  # Largeur du bouton
-        self.button_height = 50  # Hauteur du bouton
+        self.button_width = 200
+        self.button_height = 50
 
     def setup(self):
         self.player = Player(400, 300, 5, 10, -0.5)
@@ -94,31 +93,23 @@ class GameEngine(arcade.Window):
 
             if self.is_paused:
                 camera_x, camera_y = self.camera.position
-                # Ne plus tenir compte de la caméra pour l'affichage des boutons
-                pause_text = "Jeu en pause"
-                arcade.draw_text(pause_text, SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y, arcade.color.GRAY_ASPARAGUS,
-                                 font_size=23, anchor_x="center", anchor_y="center")
-                reprendre_text = "Appuyez sur ESPACE pour continuer."
-                arcade.draw_text(reprendre_text, SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 50 + camera_y,
+                arcade.draw_text("Jeu en pause", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y, arcade.color.GRAY_ASPARAGUS,
+                                 font_size=23, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
+                arcade.draw_text("Appuyez sur ESPACE pour continuer", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 50 + camera_y,
                                  arcade.color.GRAY_ASPARAGUS,
-                                 font_size=17, anchor_x="center", anchor_y="center")
-                # Dessiner le bouton Nouvelle Partie
+                                 font_size=17, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
                 new_game_button_x = SCREEN_WIDTH / 2
                 new_game_button_y = SCREEN_HEIGHT / 2
-
                 arcade.draw_rectangle_filled(new_game_button_x + camera_x, new_game_button_y + camera_y, self.button_width,
                                              self.button_height, arcade.color.DARK_BLUE)
                 arcade.draw_text("Menu", new_game_button_x + camera_x, new_game_button_y + camera_y, arcade.color.WHITE,
-                                 font_size=20, anchor_x="center", anchor_y="center")
-
-                # Dessiner le bouton Quitter, décalé vers le bas
+                                 font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
                 quit_button_x = SCREEN_WIDTH / 2
                 quit_button_y = SCREEN_HEIGHT / 2 - 80
-
                 arcade.draw_rectangle_filled(quit_button_x + camera_x, quit_button_y + camera_y, self.button_width,
                                              self.button_height, arcade.color.DARK_RED)
                 arcade.draw_text("Quitter", quit_button_x + camera_x, quit_button_y + camera_y, arcade.color.WHITE, font_size=20,
-                                 anchor_x="center", anchor_y="center")
+                                 anchor_x="center", anchor_y="center", font_name=FONT_NAME)
 
     def on_update(self, delta_time):
         if not self.start_game:
@@ -127,7 +118,7 @@ class GameEngine(arcade.Window):
                 self.start_game = True
         else:
             if self.is_paused:
-                return  # Skip updating if the game is paused
+                return
             self.update_mana_bar()
             self.center_camera_to_player()
 
@@ -160,7 +151,7 @@ class GameEngine(arcade.Window):
     def on_key_press(self, key, modifiers):
         if not self.start_game:
             return
-        if key == arcade.key.SPACE:  # Pressing space toggles the menu
+        if key == arcade.key.SPACE:
             self.is_paused = not self.is_paused
             # self.show_menu = self.is_paused  # Show the menu if paused ---> à voir
         elif not self.rewinding:
@@ -201,24 +192,17 @@ class GameEngine(arcade.Window):
         if not self.start_game:
             self.menu.on_mouse_press(x, y, button, modifiers)
         elif self.is_paused:
-            # Calcul des coordonnées des boutons
             new_game_button_x = SCREEN_WIDTH / 2
             new_game_button_y = SCREEN_HEIGHT / 2
             quit_button_x = SCREEN_WIDTH / 2
             quit_button_y = SCREEN_HEIGHT / 2 - 100
-
-            # Vérifier si le clic est dans les limites du bouton "Nouvelle Partie"
             if (new_game_button_x - self.button_width / 2 < x < new_game_button_x + self.button_width / 2 and
                     new_game_button_y - self.button_height / 2 < y < new_game_button_y + self.button_height / 2):
-                # Action pour "Nouvelle Partie"
                 self.start_game = False
-                self.setup()  # Réinitialiser le jeu
+                self.setup()
                 self.is_paused = False
-
-            # Vérifier si le clic est dans les limites du bouton "Quitter"
             elif (quit_button_x - self.button_width / 2 < x < quit_button_x + self.button_width / 2 and
                   quit_button_y - self.button_height / 2 < y < quit_button_y + self.button_height / 2):
-                # Action pour "Quitter"
                 arcade.close_window()
 
     def center_camera_to_player(self):

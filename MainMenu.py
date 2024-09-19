@@ -29,8 +29,6 @@ class MainMenu:
     def on_draw(self):
         self.background.draw()
 
-        #os.path.join("Assets", "levels", "world1.json")
-
         arcade.draw_text(SCREEN_TITLE, self.title_x, self.title_y, arcade.color.WHITE, font_size=50, anchor_x="center", font_name=FONT_NAME)
 
         arcade.draw_rectangle_filled(self.new_game_button_x, self.new_game_button_y, self.button_width, self.button_height, arcade.color.DARK_BLUE)
