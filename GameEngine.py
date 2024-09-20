@@ -131,6 +131,19 @@ class GameEngine(arcade.Window):
             "Ground 2": {
                 "use_spatial_hash": True,
             },
+            "Platforme":{
+                "use_spatial_hash": True,
+            },
+            "Platforme Background":{
+                "use_spatial_hash": True,
+            },
+            "Background":{
+                "use_spatial_hash": True,
+            },
+            "Background2":{
+                "use_spatial_hash": True,
+            }
+            
         }
 
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
