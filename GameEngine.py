@@ -244,22 +244,24 @@ class GameEngine(arcade.Window):
             if self.is_paused:
                 camera_x, camera_y = self.camera.position
                 arcade.draw_text("Jeu en pause", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y,
-                                 arcade.color.GRAY_ASPARAGUS, font_size=23, anchor_x="center",
+                                 arcade.color.JET, font_size=23, anchor_x="center",
                                  anchor_y="center", font_name=FONT_NAME)
                 arcade.draw_text("Appuyez sur ECHAP pour continuer", SCREEN_WIDTH / 2 + camera_x,
-                                 SCREEN_HEIGHT / 2 + 50 + camera_y, arcade.color.GRAY_ASPARAGUS,
+                                 SCREEN_HEIGHT / 2 + 50 + camera_y, arcade.color.JET,
                                  font_size=17, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
                 new_game_button_x = SCREEN_WIDTH / 2
                 new_game_button_y = SCREEN_HEIGHT / 2
-                arcade.draw_rectangle_filled(new_game_button_x + camera_x, new_game_button_y + camera_y,
-                                              self.button_width, self.button_height, arcade.color.DARK_BLUE)
-                arcade.draw_text("Menu", new_game_button_x + camera_x, new_game_button_y + camera_y,
+                arcade.draw_rectangle_filled(new_game_button_x + camera_x , new_game_button_y + camera_y,
+                                              self.button_width + 70, self.button_height, arcade.color.BABY_BLUE)
+                arcade.draw_text("Nouvelle Partie", new_game_button_x + camera_x, new_game_button_y + camera_y,
                                  arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center",
                                  font_name=FONT_NAME)
+
+
                 quit_button_x = SCREEN_WIDTH / 2
                 quit_button_y = SCREEN_HEIGHT / 2 - 80
                 arcade.draw_rectangle_filled(quit_button_x + camera_x, quit_button_y + camera_y,
-                                              self.button_width, self.button_height, arcade.color.DARK_RED)
+                                              self.button_width + 70, self.button_height, arcade.color.BABY_PINK)
                 arcade.draw_text("Quitter", quit_button_x + camera_x, quit_button_y + camera_y,
                                  arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center",
                                  font_name=FONT_NAME)
@@ -401,7 +403,7 @@ class GameEngine(arcade.Window):
             quit_button_y = SCREEN_HEIGHT / 2 - 100
             if (new_game_button_x - self.button_width / 2 < x < new_game_button_x + self.button_width / 2 and
                     new_game_button_y - self.button_height / 2 < y < new_game_button_y + self.button_height / 2):
-                self.start_game = False
+                self.start_game = True
                 self.setup()
                 self.is_paused = False
             elif (quit_button_x - self.button_width / 2 < x < quit_button_x + self.button_width / 2 and

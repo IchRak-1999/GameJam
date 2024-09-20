@@ -1,7 +1,6 @@
 import arcade
 import os
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FONT_NAME
-from Background import Background
 
 class MainMenu:
     def __init__(self, game_engine):
@@ -24,22 +23,26 @@ class MainMenu:
         self.slide_out = False
         self.slide_speed = 500
 
-        self.background = Background(SCREEN_WIDTH, SCREEN_HEIGHT, self.game_engine.bg_color, self.game_engine.bg_layer_3_path, self.game_engine.bg_layer_4_path)
+        # Load the background image
+        base_path = os.path.abspath(os.path.dirname(__file__))
+        background_path = os.path.join(base_path, "Assets", "env", "sakura.jpg")
+        self.background_texture = arcade.load_texture(background_path)
 
     def on_draw(self):
-        self.background.draw()
+        # Draw the background image
+        arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self.background_texture)
 
+        # Draw the title and buttons
         arcade.draw_text(SCREEN_TITLE, self.title_x, self.title_y, arcade.color.WHITE, font_size=50, anchor_x="center", font_name=FONT_NAME)
 
-        arcade.draw_rectangle_filled(self.new_game_button_x, self.new_game_button_y, self.button_width, self.button_height, arcade.color.DARK_BLUE)
+        arcade.draw_rectangle_filled(self.new_game_button_x, self.new_game_button_y, self.button_width, self.button_height, arcade.color.BABY_BLUE)
         arcade.draw_text("Nouvelle Partie", self.new_game_button_x, self.new_game_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
 
-        arcade.draw_rectangle_filled(self.quit_button_x, self.quit_button_y, self.button_width, self.button_height, arcade.color.DARK_RED)
+        arcade.draw_rectangle_filled(self.quit_button_x, self.quit_button_y, self.button_width , self.button_height, arcade.color.BABY_PINK)
         arcade.draw_text("Quitter", self.quit_button_x, self.quit_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
 
-    def update(self, delta_time,player):
-        self.background.update(delta_time,player)
-
+    def update(self, delta_time, player):
+        # Update background (if necessary)
         if self.slide_out:
             self.title_y += self.slide_speed * delta_time
             self.new_game_button_y += self.slide_speed * delta_time
