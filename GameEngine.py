@@ -177,6 +177,8 @@ class GameEngine(arcade.Window):
         key_layer = self.tile_map.sprite_lists.get("Clef")
         door_layer = self.tile_map.sprite_lists.get("Porte")
 
+        self.ground.get_list().extend(door_layer)
+
         if key_layer:
             for key_sprite in key_layer:
                 key = Key(key_sprite)
