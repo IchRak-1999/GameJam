@@ -62,6 +62,7 @@ class GameEngine(arcade.Window):
         self.sounds = Sounds()  # Créer une instance de Sounds
         # Physics engine
         self.physics_engine = None
+        self.jump_sound = None  # Variable pour stocker le son de saut
 
         map_width = 0
         map_height = 0
@@ -121,6 +122,8 @@ class GameEngine(arcade.Window):
 
         music_path = os.path.join(base_path, "Assets", "sounds", "main_music.mp3")
         self.sounds.setup(music_path, volume=0.5)
+        jump_sound_path = os.path.join(base_path, "Assets", "sounds", "jump.wav")
+        self.jump_sound = arcade.load_sound(jump_sound_path)
 
         map_name = os.path.join("Assets", "levels", "world1.json")
 
@@ -307,13 +310,14 @@ class GameEngine(arcade.Window):
             self.platform.update(delta_time)
 
     def on_key_press(self, key, modifiers):
-        if not self.start_game:
+        if not sself.start_game:
             return
         if key == arcade.key.ESCAPE:
             self.is_paused = not self.is_paused
         elif not self.rewinding:
             if key == arcade.key.UP:
                 self.up_pressed = True
+                arcade.play_sound(self.jump_sound)  # Jouer le son de saut
             elif key == arcade.key.DOWN:
                 self.down_pressed = True
             elif key == arcade.key.LEFT:
