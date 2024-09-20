@@ -22,6 +22,7 @@ PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 0.5
 ANIMATION_SPEED = 0.15  # Speed of the animation frames
 PLAYER_SCALE = 2.0  # Scale to make the player sprite larger
+GAME_OVER_Y_LIMIT = -100  # Hauteur minimale pour considérer le joueur comme tombé
 
 MENU_CAMERA_CENTER_X = SCREEN_WIDTH // 2
 MENU_CAMERA_CENTER_Y = SCREEN_HEIGHT // 2
@@ -63,6 +64,9 @@ class GameEngine(arcade.Window):
         # Physics engine
         self.physics_engine = None
         self.jump_sound = None  # Variable pour stocker le son de saut
+
+        self.is_game_over = False
+        self.level_complete = False  # Si le joueur termine le niveau
 
         map_width = 0
         map_height = 0
@@ -200,10 +204,22 @@ class GameEngine(arcade.Window):
         self.mana_bar.center_y = camera_y + SCREEN_HEIGHT - self.mana / 2 - 10
 
     def on_draw(self):
+        camera_x, camera_y = self.camera.position
         arcade.start_render()
 
         if not self.start_game:
             self.menu.on_draw()
+        elif self.is_game_over:
+            self.background.draw()
+            arcade.draw_text("Game Over", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + camera_y,
+                             arcade.color.GRAY_ASPARAGUS, font_size=50, anchor_x="center", font_name=FONT_NAME)
+            arcade.draw_text("Appuyez sur ECHAP pour recommencer", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 - 50 + camera_y,
+                             arcade.color.WHITE, font_size=20, anchor_x="center", font_name=FONT_NAME)
+        elif self.level_complete:
+            arcade.draw_text("Niveau Terminé!", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + camera_y,
+                             arcade.color.GRAY_ASPARAGUS, font_size=50, anchor_x="center", font_name=FONT_NAME)
+            arcade.draw_text("Appuyez sur ECHAP pour continuer", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 - 50 + camera_y,
+                             arcade.color.WHITE, font_size=20, anchor_x="center", font_name=FONT_NAME)
         else:
             self.background.draw()
             self.mana_bar.draw()
@@ -252,7 +268,7 @@ class GameEngine(arcade.Window):
             if self.menu.start_game:
                 self.start_game = True
         else:
-            if self.is_paused:
+            if self.is_paused or self.is_game_over or self.level_complete:
                 return
             self.update_mana_bar()
             self.center_camera_to_player()
@@ -292,6 +308,22 @@ class GameEngine(arcade.Window):
             if self.up_pressed and self.physics_engine.can_jump():
                 self.player.change_y = PLAYER_JUMP_STRENGTH
 
+            # Vérification de Game Over si le joueur tombe sous la carte
+            if self.player.center_y < GAME_OVER_Y_LIMIT:
+                self.is_game_over = True
+
+                # Vérification de la fin du niveau si le joueur atteint la porte
+                door_hit_list = arcade.check_for_collision_with_list(self.player, self.door_list)
+                for door in door_hit_list:
+                    if self.has_key and door.locked:
+                        door.unlock()
+                        self.level_complete = True  # Le joueur a terminé le niveau
+
+                # Mettez à jour le moteur physique
+                self.physics_engine.update()
+                self.background.update(delta_time, self.player)
+                self.platform.update(delta_time)
+
             # Check for key collection
             key_hit_list = arcade.check_for_collision_with_list(self.player, self.key_list)
             if key_hit_list:
@@ -305,7 +337,10 @@ class GameEngine(arcade.Window):
                 if self.has_key and door.locked:
                     door.unlock()
 
-            self.physics_engine.update()
+            try:
+                self.physics_engine.update()
+            except:
+                self.is_game_over = True  # Si une erreur se produit dans le moteur physique, Game Over
             self.background.update(delta_time,self.player)
             self.platform.update(delta_time)
 
@@ -313,7 +348,12 @@ class GameEngine(arcade.Window):
         if not self.start_game:
             return
         if key == arcade.key.ESCAPE:
-            self.is_paused = not self.is_paused
+            if self.is_game_over or self.level_complete:
+                self.setup()  # Réinitialise le jeu
+                self.is_game_over = False
+                self.level_complete = False
+            else:
+                self.is_paused = not self.is_paused
         elif not self.rewinding:
             if key == arcade.key.UP:
                 self.up_pressed = True
