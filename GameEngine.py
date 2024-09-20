@@ -310,7 +310,7 @@ class GameEngine(arcade.Window):
             self.platform.update(delta_time)
 
     def on_key_press(self, key, modifiers):
-        if not sself.start_game:
+        if not self.start_game:
             return
         if key == arcade.key.ESCAPE:
             self.is_paused = not self.is_paused
