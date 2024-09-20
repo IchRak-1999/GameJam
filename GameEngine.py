@@ -122,7 +122,7 @@ class GameEngine(arcade.Window):
         music_path = os.path.join(base_path, "Assets", "sounds", "main_music.mp3")
         self.sounds.setup(music_path, volume=0.5)
 
-        map_name = os.path.join("Assets", "levels","world1.json")
+        map_name = os.path.join("Assets", "levels", "world1.json")
 
         layer_options = {
             "Ground": {
@@ -258,7 +258,7 @@ class GameEngine(arcade.Window):
                 rewind_time_elapsed = time.time() - self.rewind_start_time
                 rewind_frame_count = int(rewind_time_elapsed * 60)
                 self.mana -= self.mana_rate
-
+                #self.platform.
                 if self.mana <= 0:
                     self.stop_rewind()
                 elif rewind_frame_count < len(self.pos_hist):

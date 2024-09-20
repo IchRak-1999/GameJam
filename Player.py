@@ -1,4 +1,5 @@
 import arcade
+from constants import SCREEN_WIDTH
 
 class Player(arcade.Sprite):
     def __init__(self, x, y, speed, jump_strength, idle_right_sprite_path, run_right_sprite_path, idle_left_sprite_path, run_left_sprite_path, scale, animation_speed):
@@ -13,6 +14,7 @@ class Player(arcade.Sprite):
         self.animation_speed = animation_speed
         self.scale = scale
         self.is_facing_right = True
+        self.screen_width = SCREEN_WIDTH  # Store the screen width for boundary checking
 
         self.idle_right_textures = arcade.load_spritesheet(idle_right_sprite_path, sprite_width=93, sprite_height=112, columns=5, count=5)
         self.run_right_textures = arcade.load_spritesheet(run_right_sprite_path, sprite_width=93, sprite_height=112, columns=8, count=8)
@@ -47,6 +49,12 @@ class Player(arcade.Sprite):
             self.is_facing_right = True
         else:
             self.is_running = False
+
+        # Constrain player's x position within 0 and screen_width * 2
+        if self.center_x < 0:
+            self.center_x = 0
+        elif self.center_x >= self.screen_width * 2:
+            self.center_x = self.screen_width * 2
 
         self.update_animation(delta_time)
 
