@@ -217,10 +217,10 @@ class GameEngine(arcade.Window):
                              arcade.color.GRAY_ASPARAGUS, font_size=50, anchor_x="center", font_name=FONT_NAME)
             arcade.draw_text("Appuyez sur ECHAP pour recommencer", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 - 50 + camera_y,
                              arcade.color.WHITE, font_size=20, anchor_x="center", font_name=FONT_NAME)
-        elif self.level_complete:
-            arcade.draw_text("Niveau Terminé!", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + camera_y,
+        elif self.level_complete and self.has_key:
+            arcade.draw_text("You win !", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + camera_y,
                              arcade.color.GRAY_ASPARAGUS, font_size=50, anchor_x="center", font_name=FONT_NAME)
-            arcade.draw_text("Appuyez sur ECHAP pour continuer", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 - 50 + camera_y,
+            arcade.draw_text("Appuyez sur ECHAP pour quitter le jeu", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 - 50 + camera_y,
                              arcade.color.WHITE, font_size=20, anchor_x="center", font_name=FONT_NAME)
         else:
             self.background.draw()

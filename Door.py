@@ -10,7 +10,6 @@ class Door(arcade.Sprite):
         self.locked = True  # Door starts locked
 
     def unlock(self):
-        """Unlock the door and display a message to the player."""
-        self.locked = False
         arcade.draw_text("Level Completed!", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
-                         arcade.color.WHITE, 20, align="center", anchor_x="center", anchor_y="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center",
+                         multiline=True, width=SCREEN_WIDTH - 50)
