@@ -1,13 +1,25 @@
 import arcade
 import os
 import time
+import json
+from Platform2 import Platform2
 from Platform import Platform
 from SolidObject import SolidObject
 from Player import Player
 from Background import Background
+from Ground import Ground
+from Ladder import Ladder
 from MainMenu import MainMenu
 from Sounds import Sounds  # Importer la classe Sounds
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FONT_NAME
+
+#Constants variable
+TILE_SCALING = 0.6
+PLAYER_JUMP_STRENGTH = 13
+PLAYER_MOVEMENT_SPEED = 5
+GRAVITY = 0.5
+ANIMATION_SPEED = 0.25  # Speed of the animation frames
+PLAYER_SCALE = 2.0  # Scale to make the player sprite larger
 
 class GameEngine(arcade.Window):
     def __init__(self, width, height, title):
@@ -27,8 +39,44 @@ class GameEngine(arcade.Window):
         self.button_width = 200
         self.button_height = 50
         self.player_scale = 1.5
-        self.animation_speed = 0.25
+        self.animation_speed = ANIMATION_SPEED
+        self.tile_map = None
+        self.ground = None
+        self.platform = None
+        self.ladder = None
+        self.background_list = None
+        self.player_start_x = 0
+        self.player_start_y = 0
+        self.player_velocity_y = 0
+        self.player_jumping = False
+        self.player_climbing = False
+        player_data = None
         self.sounds = Sounds()  # Créer une instance de Sounds
+        # Physics engine
+        self.physics_engine = None
+
+        map_width = 0
+        map_height = 0
+
+        with open("./Assets/levels/world1.json") as f:
+
+            map_data = json.load(f)
+
+            for layer in map_data['layers']:
+                if layer['name'] == 'Player':
+                    player_data = layer['data']
+                    map_width = layer['width']
+                    map_height = layer['height']
+                    break
+
+            player_index = player_data.index(6565)
+
+        self.player_start_x = player_index % map_width
+        self.player_start_y = player_index // map_width
+        self.player_start_y = map_height - self.player_start_y - 1
+
+        self.player_start_x = self.player_start_x * (32 * TILE_SCALING)
+        self.player_start_y = self.player_start_y * (32 * TILE_SCALING)
 
     def setup(self):
         base_path = os.path.abspath(os.path.dirname(__file__))
@@ -37,7 +85,7 @@ class GameEngine(arcade.Window):
         idle_left_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_LEFT.png")
         run_right_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN_LEFT.png")
 
-        self.player = Player(400, 300, 5, 10, -0.5, idle_right_sprite_path, run_left_sprite_path, idle_left_sprite_path, run_right_sprite_path, self.player_scale, self.animation_speed)
+        self.player = Player(self.player_start_x, self.player_start_y+100, PLAYER_MOVEMENT_SPEED, PLAYER_JUMP_STRENGTH, idle_right_sprite_path, run_left_sprite_path, idle_left_sprite_path, run_right_sprite_path, 2*TILE_SCALING, ANIMATION_SPEED)
 
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
@@ -50,7 +98,7 @@ class GameEngine(arcade.Window):
         self.left_pressed = False
         self.right_pressed = False
 
-        self.platforms = [
+        """self.platforms = [
             Platform(200, 20, arcade.color.YELLOW, 400, 50, -1, 0),
             Platform(200, 20, arcade.color.RED, 300, 250, 2, 0),
             Platform(200, 20, arcade.color.ORANGE, 400, 200, 0, 1)
@@ -58,7 +106,7 @@ class GameEngine(arcade.Window):
 
         self.solid_objects = [
             SolidObject(SCREEN_WIDTH*20, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
-        ]
+        ]"""
 
         self.base_path = os.path.abspath(os.path.dirname(__file__))
         self.bg_layer_3_path = os.path.join(self.base_path, "Assets", "env", "Clouds", "Clouds 2", "3.png")
@@ -75,6 +123,33 @@ class GameEngine(arcade.Window):
 
         music_path = os.path.join(base_path, "Assets", "sounds", "main_music.mp3")
         self.sounds.setup(music_path, volume=0.5)
+
+        map_name = os.path.join("Assets", "levels","world1.json")
+
+        layer_options = {
+            "Ground": {
+                "use_spatial_hash": True,
+            },
+            "Ground 2": {
+                "use_spatial_hash": True,
+            },
+        }
+
+        self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
+        ground_list = self.tile_map.sprite_lists.get("Ground")
+        platform_list = self.tile_map.sprite_lists.get("Platforme")
+        platform_background_list = self.tile_map.sprite_lists.get("Platforme Background")
+        self.background_list = self.tile_map.sprite_lists.get("Background")
+
+        ground_list.extend(self.tile_map.sprite_lists.get("Ground 2"))
+        ground_list.extend(platform_list)
+
+        self.ground = Ground(ground_list)
+        self.platform = Platform2(platform_list,platform_background_list,direction_x=-1,direction_y=1)
+        self.ladder = Ladder(self.tile_map.sprite_lists.get("Echelle"))
+
+        # Set up the physics engine
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player,platforms=self.platform.get_list(),ladders=self.ladder.get_lists(), walls=self.ground.get_list(), gravity_constant=GRAVITY)
 
     def rewind(self):
         if self.mana > 0:
@@ -100,10 +175,15 @@ class GameEngine(arcade.Window):
         else:
             self.background.draw()
             self.mana_bar.draw()
-            for solid_object in self.solid_objects:
-                solid_object.draw()
-            for platform in self.platforms:
-                platform.draw()
+            # Afficher les couches dans l'ordre correct
+            if self.background_list:
+                self.background_list.draw()
+            if self.ground:
+                self.ground.draw()
+            if self.platform:
+                self.platform.draw()
+            if self.ladder:
+                self.ladder.draw()
             self.player.draw()
             self.camera.use()
 
@@ -145,8 +225,6 @@ class GameEngine(arcade.Window):
                 rewind_time_elapsed = time.time() - self.rewind_start_time
                 rewind_frame_count = int(rewind_time_elapsed * 60)
                 self.mana -= self.mana_rate
-                for platform in self.platforms:
-                    platform.update(-delta_time)
 
                 if self.mana <= 0:
                     self.stop_rewind()
@@ -155,22 +233,37 @@ class GameEngine(arcade.Window):
                 else:
                     self.stop_rewind()
             else:
-                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed, self.solid_objects,
-                                   self.platforms, delta_time)
-                for platform in self.platforms:
-                    platform.update(delta_time)
+                self.player.update(self.up_pressed, self.down_pressed, self.left_pressed, self.right_pressed,delta_time)
 
                 self.pos_hist.append((self.player.center_x, self.player.center_y))
 
                 if self.mana < 100:
                     self.mana += self.mana_rate
 
+                if self.ladder.check_climb(self.player):
+                    if self.up_pressed:
+                        self.player.change_y = 2  # Move up while climbing
+                    elif self.down_pressed:
+                        self.player.change_y = -2  # Move down while climbing
+                    else:
+                        self.player.change_y = 0  # Stop climbing if no input
+                    self.climbing = True
+                else:
+                    self.climbing = False
+                    # Normal gravity or movement when not climbing
+                    self.player.change_y -= 0.2
+
+            if self.up_pressed and self.physics_engine.can_jump():
+                self.player.change_y = PLAYER_JUMP_STRENGTH
+
+            self.physics_engine.update()
             self.background.update(delta_time)
+            self.platform.update(delta_time)
 
     def on_key_press(self, key, modifiers):
         if not self.start_game:
             return
-        if key == arcade.key.SPACE:
+        if key == arcade.key.ESCAPE:
             self.is_paused = not self.is_paused
         elif not self.rewinding:
             if key == arcade.key.UP:

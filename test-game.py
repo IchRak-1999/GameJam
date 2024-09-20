@@ -143,8 +143,8 @@ class GameEngine(arcade.Window):
 
         # Build the path to your sprites
         base_path = os.path.abspath(os.path.dirname(__file__))
-        idle_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE.png")
-        run_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN.png")
+        idle_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "IDLE_RIGHT.png")
+        run_sprite_path = os.path.join(base_path, "Assets", "player", "Samurai", "Sprites", "RUN_RIGHT.png")
 
         bg_layer_1_path = os.path.join(base_path, "Assets", "env", "Clouds", "Clouds 2", "1.png")
         bg_layer_2_path = os.path.join(base_path, "Assets", "env", "Clouds", "Clouds 2", "2.png")
@@ -309,6 +309,7 @@ class GameEngine(arcade.Window):
     def update(self, delta_time):
         # Appliquer la gravité si le joueur ne touche pas le sol
         self.center_camera_to_player()
+        pass
 
     def on_key_press(self, key, modifiers):
         """ Called whenever a key is pressed. """
