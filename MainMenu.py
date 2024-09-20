@@ -37,8 +37,8 @@ class MainMenu:
         arcade.draw_rectangle_filled(self.quit_button_x, self.quit_button_y, self.button_width, self.button_height, arcade.color.DARK_RED)
         arcade.draw_text("Quitter", self.quit_button_x, self.quit_button_y, arcade.color.WHITE, font_size=20, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
 
-    def update(self, delta_time):
-        self.background.update(delta_time)
+    def update(self, delta_time,player):
+        self.background.update(delta_time,player)
 
         if self.slide_out:
             self.title_y += self.slide_speed * delta_time

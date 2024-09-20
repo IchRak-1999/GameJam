@@ -15,22 +15,30 @@ class Background:
         self.bg_layer_3_x_2 = screen_width
         self.bg_layer_4_x_1 = 0
         self.bg_layer_4_x_2 = screen_width
+        self.bg_layer_5_x_1 = 0
+        self.bg_layer_5_x_2 = screen_width
     
-    def update(self, delta_time):
+    def update(self, delta_time,player):
         """ Met à jour les positions des couches en fonction de leur vitesse de défilement """
 
         self.bg_layer_3_x_1 -= self.scroll_speed_3
         self.bg_layer_3_x_2 -= self.scroll_speed_3
         self.bg_layer_4_x_1 -= self.scroll_speed_4
         self.bg_layer_4_x_2 -= self.scroll_speed_4
+        self.bg_layer_5_x_1 -= self.scroll_speed_4
+        self.bg_layer_5_x_2 -= self.scroll_speed_4
         if self.bg_layer_3_x_1 <= -self.screen_width:
             self.bg_layer_3_x_1 = self.screen_width
         if self.bg_layer_3_x_2 <= -self.screen_width:
             self.bg_layer_3_x_2 = self.screen_width
         if self.bg_layer_4_x_1 <= -self.screen_width:
-            self.bg_layer_4_x_1 = self.screen_width
+            self.bg_layer_4_x_1 = self.screen_width + player.center_x // 2
         if self.bg_layer_4_x_2 <= -self.screen_width:
-            self.bg_layer_4_x_2 = self.screen_width
+            self.bg_layer_4_x_2 = self.screen_width + player.center_x // 2
+        if self.bg_layer_5_x_1 <= -self.screen_width:
+            self.bg_layer_5_x_1 = self.screen_width + player.center_x
+        if self.bg_layer_5_x_2 <= -self.screen_width:
+            self.bg_layer_5_x_2 = self.screen_width + player.center_x
     
     def draw(self):
         """ Dessine les deux couches du background """
@@ -38,3 +46,5 @@ class Background:
         arcade.draw_lrwh_rectangle_textured(self.bg_layer_3_x_2, 0, self.screen_width, self.screen_height, self.bg_layer_3)
         arcade.draw_lrwh_rectangle_textured(self.bg_layer_4_x_1, 0, self.screen_width, self.screen_height, self.bg_layer_4)
         arcade.draw_lrwh_rectangle_textured(self.bg_layer_4_x_2, 0, self.screen_width, self.screen_height, self.bg_layer_4)
+        arcade.draw_lrwh_rectangle_textured(self.bg_layer_5_x_1, 2, self.screen_width, self.screen_height, self.bg_layer_4)
+        arcade.draw_lrwh_rectangle_textured(self.bg_layer_5_x_2, 2, self.screen_width, self.screen_height, self.bg_layer_4)

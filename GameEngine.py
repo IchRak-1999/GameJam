@@ -9,6 +9,8 @@ from Player import Player
 from Background import Background
 from Ground import Ground
 from Ladder import Ladder
+from Key import Key
+from Door import Door
 from MainMenu import MainMenu
 from Sounds import Sounds  # Importer la classe Sounds
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, FONT_NAME
@@ -20,6 +22,9 @@ PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 0.5
 ANIMATION_SPEED = 0.15  # Speed of the animation frames
 PLAYER_SCALE = 2.0  # Scale to make the player sprite larger
+
+MENU_CAMERA_CENTER_X = SCREEN_WIDTH // 2
+MENU_CAMERA_CENTER_Y = SCREEN_HEIGHT // 2
 
 class GameEngine(arcade.Window):
     def __init__(self, width, height, title):
@@ -50,6 +55,9 @@ class GameEngine(arcade.Window):
         self.player_velocity_y = 0
         self.player_jumping = False
         self.player_climbing = False
+        self.key_list = arcade.SpriteList()
+        self.door_list = arcade.SpriteList()
+        self.has_key = False
         player_data = None
         self.sounds = Sounds()  # Créer une instance de Sounds
         # Physics engine
@@ -98,16 +106,6 @@ class GameEngine(arcade.Window):
         self.left_pressed = False
         self.right_pressed = False
 
-        """self.platforms = [
-            Platform(200, 20, arcade.color.YELLOW, 400, 50, -1, 0),
-            Platform(200, 20, arcade.color.RED, 300, 250, 2, 0),
-            Platform(200, 20, arcade.color.ORANGE, 400, 200, 0, 1)
-        ]
-
-        self.solid_objects = [
-            SolidObject(SCREEN_WIDTH*20, 20, arcade.color.BLACK, SCREEN_WIDTH // 2, 10)
-        ]"""
-
         self.base_path = os.path.abspath(os.path.dirname(__file__))
         self.bg_layer_3_path = os.path.join(self.base_path, "Assets", "env", "Clouds", "Clouds 2", "3.png")
         self.bg_layer_4_path = os.path.join(self.base_path, "Assets", "env", "Clouds", "Clouds 2", "4.png")
@@ -118,7 +116,7 @@ class GameEngine(arcade.Window):
                                      self.bg_layer_4_path)
 
         self.camera = arcade.Camera(self.width, self.height)
-
+        self.camera.move_to((MENU_CAMERA_CENTER_X,MENU_CAMERA_CENTER_Y))
         self.menu = MainMenu(self)
 
         music_path = os.path.join(base_path, "Assets", "sounds", "main_music.mp3")
@@ -148,8 +146,26 @@ class GameEngine(arcade.Window):
         self.platform = Platform2(platform_list,platform_background_list,direction_x=-1,direction_y=1)
         self.ladder = Ladder(self.tile_map.sprite_lists.get("Echelle"))
 
+        self.load_key_and_door()
+
         # Set up the physics engine
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.player,platforms=self.platform.get_list(),ladders=self.ladder.get_lists(), walls=self.ground.get_list(), gravity_constant=GRAVITY)
+
+    def load_key_and_door(self):
+        """Load the key and door from the tile map."""
+        # Retrieve keys and doors from the tilemap sprite lists
+        key_layer = self.tile_map.sprite_lists.get("Clef")
+        door_layer = self.tile_map.sprite_lists.get("Porte")
+
+        if key_layer:
+            for key_sprite in key_layer:
+                key = Key(key_sprite)
+                self.key_list.append(key)
+
+        if door_layer:
+            for door_sprite in door_layer:
+                door = Door(door_sprite)
+                self.door_list.append(door)
 
     def rewind(self):
         if self.mana > 0:
@@ -184,6 +200,10 @@ class GameEngine(arcade.Window):
                 self.platform.draw()
             if self.ladder:
                 self.ladder.draw()
+            if self.key_list:
+                self.key_list.draw()
+            if self.door_list:
+                self.door_list.draw()
             self.player.draw()
             self.camera.use()
 
@@ -192,7 +212,7 @@ class GameEngine(arcade.Window):
                 arcade.draw_text("Jeu en pause", SCREEN_WIDTH / 2 + camera_x, SCREEN_HEIGHT / 2 + 100 + camera_y,
                                  arcade.color.GRAY_ASPARAGUS, font_size=23, anchor_x="center",
                                  anchor_y="center", font_name=FONT_NAME)
-                arcade.draw_text("Appuyez sur ESPACE pour continuer", SCREEN_WIDTH / 2 + camera_x,
+                arcade.draw_text("Appuyez sur ECHAP pour continuer", SCREEN_WIDTH / 2 + camera_x,
                                  SCREEN_HEIGHT / 2 + 50 + camera_y, arcade.color.GRAY_ASPARAGUS,
                                  font_size=17, anchor_x="center", anchor_y="center", font_name=FONT_NAME)
                 new_game_button_x = SCREEN_WIDTH / 2
@@ -212,7 +232,7 @@ class GameEngine(arcade.Window):
 
     def on_update(self, delta_time):
         if not self.start_game:
-            self.menu.update(delta_time)
+            self.menu.update(delta_time,self.player)
             if self.menu.start_game:
                 self.start_game = True
         else:
@@ -256,8 +276,21 @@ class GameEngine(arcade.Window):
             if self.up_pressed and self.physics_engine.can_jump():
                 self.player.change_y = PLAYER_JUMP_STRENGTH
 
+            # Check for key collection
+            key_hit_list = arcade.check_for_collision_with_list(self.player, self.key_list)
+            if key_hit_list:
+                for key in key_hit_list:
+                    key.remove_from_sprite_lists()
+                    self.has_key = True  # Player has collected the key
+
+            # Check for door interaction
+            door_hit_list = arcade.check_for_collision_with_list(self.player, self.door_list)
+            for door in door_hit_list:
+                if self.has_key and door.locked:
+                    door.unlock()
+
             self.physics_engine.update()
-            self.background.update(delta_time)
+            self.background.update(delta_time,self.player)
             self.platform.update(delta_time)
 
     def on_key_press(self, key, modifiers):
