@@ -50,6 +50,9 @@ class GameEngine(arcade.Window):
         self.ground = None
         self.platform = None
         self.ladder = None
+        self.level1 = True
+        self.message = None
+        self.message_list = None
         self.background_list = None
         self.player_start_x = 0
         self.player_start_y = 0
@@ -71,18 +74,34 @@ class GameEngine(arcade.Window):
         map_width = 0
         map_height = 0
 
-        with open("./Assets/levels/world1.json") as f:
+        if(self.level1):
+            with open("./Assets/levels/tuto.json") as f:
 
-            map_data = json.load(f)
+                map_data = json.load(f)
 
-            for layer in map_data['layers']:
-                if layer['name'] == 'Player':
-                    player_data = layer['data']
-                    map_width = layer['width']
-                    map_height = layer['height']
-                    break
+                for layer in map_data['layers']:
+                    if layer['name'] == 'Player':
+                        player_data = layer['data']
+                        map_width = layer['width']
+                        map_height = layer['height']
+                        break
 
-            player_index = player_data.index(6565)
+            player_index = player_data.index(4097)
+
+        else:
+
+            with open("./Assets/levels/world1.json") as f:
+
+                map_data = json.load(f)
+
+                for layer in map_data['layers']:
+                    if layer['name'] == 'Player':
+                        player_data = layer['data']
+                        map_width = layer['width']
+                        map_height = layer['height']
+                        break
+
+                player_index = player_data.index(6565)
 
         self.player_start_x = player_index % map_width
         self.player_start_y = player_index // map_width
@@ -129,7 +148,11 @@ class GameEngine(arcade.Window):
         jump_sound_path = os.path.join(base_path, "Assets", "sounds", "jump.wav")
         self.jump_sound = arcade.load_sound(jump_sound_path)
 
-        map_name = os.path.join("Assets", "levels", "world1.json")
+
+        if(self.level1):
+            map_name = os.path.join("Assets", "levels", "tuto.json")
+        else:
+            map_name = os.path.join("Assets", "levels", "world1.json")
 
         layer_options = {
             "Ground": {
@@ -159,12 +182,17 @@ class GameEngine(arcade.Window):
         platform_background_list = self.tile_map.sprite_lists.get("Platforme Background")
         self.background_list = self.tile_map.sprite_lists.get("Background")
         self.background_list.extend(self.tile_map.sprite_lists.get("Background2"))
-        ground_list.extend(self.tile_map.sprite_lists.get("Ground 2"))
+        if(self.tile_map.sprite_lists.get("Ground 2")):
+            ground_list.extend(self.tile_map.sprite_lists.get("Ground 2"))
         ground_list.extend(platform_list)
 
         self.ground = Ground(ground_list)
-        self.platform = Platform2(platform_list,platform_background_list,direction_x=-1.5,direction_y=2)
         self.ladder = Ladder(self.tile_map.sprite_lists.get("Echelle"))
+
+        if(self.level1):
+            self.platform = Platform2(platform_list,platform_background_list,direction_x=0,direction_y=0)
+        else:
+            self.platform = Platform2(platform_list,platform_background_list,direction_x=-1.5,direction_y=2)
 
         self.load_key_and_door()
 
@@ -321,6 +349,7 @@ class GameEngine(arcade.Window):
                 for door in door_hit_list:
                     if self.has_key and door.locked:
                         door.unlock()
+                        
                         self.level_complete = True  # Le joueur a terminé le niveau
 
                 # Mettez à jour le moteur physique
@@ -339,7 +368,12 @@ class GameEngine(arcade.Window):
             door_hit_list = arcade.check_for_collision_with_list(self.player, self.door_list)
             for door in door_hit_list:
                 if self.has_key and door.locked:
-                    door.unlock()
+                    if(self.level1):
+                        door.unlock()
+                        self.level1 = False
+                        self.setup()
+                    else:
+                        arcade.close_window()
 
             try:
                 self.physics_engine.update()
