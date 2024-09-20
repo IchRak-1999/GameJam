@@ -163,7 +163,7 @@ class GameEngine(arcade.Window):
         ground_list.extend(platform_list)
 
         self.ground = Ground(ground_list)
-        self.platform = Platform2(platform_list,platform_background_list,direction_x=-1,direction_y=1)
+        self.platform = Platform2(platform_list,platform_background_list,direction_x=-1.5,direction_y=2)
         self.ladder = Ladder(self.tile_map.sprite_lists.get("Echelle"))
 
         self.load_key_and_door()
