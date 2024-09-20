@@ -49,6 +49,7 @@ class GameEngine(arcade.Window):
         self.tile_map = None
         self.ground = None
         self.platform = None
+        self.door_layer = None
         self.ladder = None
         self.level1 = True
         self.message = None
@@ -119,6 +120,8 @@ class GameEngine(arcade.Window):
 
         self.player = Player(self.player_start_x, self.player_start_y+100, PLAYER_MOVEMENT_SPEED, PLAYER_JUMP_STRENGTH, idle_right_sprite_path, run_left_sprite_path, idle_left_sprite_path, run_right_sprite_path, 2*TILE_SCALING, ANIMATION_SPEED)
 
+        self.door_layer = None
+
         self.mana = 0
         self.mana_bar = arcade.SpriteSolidColor(50, self.mana, arcade.color.BLUE)
         self.mana_bar.center_x = SCREEN_WIDTH - 50
@@ -148,6 +151,7 @@ class GameEngine(arcade.Window):
         jump_sound_path = os.path.join(base_path, "Assets", "sounds", "jump.wav")
         self.jump_sound = arcade.load_sound(jump_sound_path)
 
+        self.has_key = False
 
         if(self.level1):
             map_name = os.path.join("Assets", "levels", "tuto.json")
@@ -203,17 +207,17 @@ class GameEngine(arcade.Window):
         """Load the key and door from the tile map."""
         # Retrieve keys and doors from the tilemap sprite lists
         key_layer = self.tile_map.sprite_lists.get("Clef")
-        door_layer = self.tile_map.sprite_lists.get("Porte")
+        self.door_layer = self.tile_map.sprite_lists.get("Porte")
 
-        self.ground.get_list().extend(door_layer)
+        self.ground.get_list().extend(self.door_layer)
 
         if key_layer:
             for key_sprite in key_layer:
                 key = Key(key_sprite)
                 self.key_list.append(key)
 
-        if door_layer:
-            for door_sprite in door_layer:
+        if self.door_layer:
+            for door_sprite in self.door_layer:
                 door = Door(door_sprite)
                 self.door_list.append(door)
 
