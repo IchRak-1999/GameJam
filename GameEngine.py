@@ -18,7 +18,7 @@ TILE_SCALING = 0.6
 PLAYER_JUMP_STRENGTH = 13
 PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 0.5
-ANIMATION_SPEED = 0.25  # Speed of the animation frames
+ANIMATION_SPEED = 0.15  # Speed of the animation frames
 PLAYER_SCALE = 2.0  # Scale to make the player sprite larger
 
 class GameEngine(arcade.Window):
@@ -140,7 +140,7 @@ class GameEngine(arcade.Window):
         platform_list = self.tile_map.sprite_lists.get("Platforme")
         platform_background_list = self.tile_map.sprite_lists.get("Platforme Background")
         self.background_list = self.tile_map.sprite_lists.get("Background")
-
+        self.background_list.extend(self.tile_map.sprite_lists.get("Background2"))
         ground_list.extend(self.tile_map.sprite_lists.get("Ground 2"))
         ground_list.extend(platform_list)
 
